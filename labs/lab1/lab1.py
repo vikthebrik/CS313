@@ -41,19 +41,19 @@ class Node(object):
 
     def setData(self, data):
         '''Set the "data" data field to the corresponding input.'''
-        pass
+        self.__data = data
 
     def setNext(self, next_node):
         '''Set the "next_node" data field to the corresponding input.'''
-        pass
+        self.__next_node = next_node
 
     def getData(self):
         '''Return the "data" data field.'''
-        pass
+        return self.__data
 
     def getNext(self):
         '''Return the "next_node" data field.'''
-        pass
+        return self.__next_node
 
 class Queue(object):
     """Provide class dosctring"""
@@ -63,13 +63,26 @@ class Queue(object):
 
     def __str__(self):
         '''Loop through your queue and print each Node's data.'''
-        pass
-
+        out = []
+        head = self.__head
+        while head:
+            out.append(head.getData())
+            head = head.getNext()
+        return str(out)
+            
     def enqueue(self, newData):
         '''Create a new node whose data is newData and whose next node is null
         Update head and tail.'''
         # Hint: Think about what's different for the first node added to the Queue
-        pass
+        new_node = Node(newData)
+        if self.isEmpty():
+            self.__head = new_node
+            self.__tail = new_node
+        else:
+            self.__tail.setNext(new_node)
+            self.__tail = new_node
+
+
 
     def dequeue(self):
         '''Return the head of the Queue
@@ -78,11 +91,17 @@ class Queue(object):
         #          to hold important information
         #  Hint: Return null on a empty Queue
         # Hint: Return the element(data) that is dequeued.
-        pass
-
+        if self.isEmpty():
+            return None
+        temp = self.__head
+        self.__head = self.__head.getNext()
+        if self.__head is None: 
+            self.__tail = None
+        return temp.getData()
+    
     def isEmpty(self):
         '''Check if the Queue is empty.'''
-        pass
+        return self.__head is None
 
 
 class Stack(object):
@@ -90,16 +109,24 @@ class Stack(object):
     def __init__(self):
         ''' We want to initialize our Stack to be empty.
         (ie) Set top as null'''
+        self.__top = None
 
     def __str__(self):
         '''Loop through your stack and print each Node's data.'''
-        pass
+        out = []
+        top = self.__top
+        while top:
+            out.append(top.getData())
+            top = top.getNext()
+        return str(out)
 
     def push(self, newData):
         '''We want to create a node whose data is newData and next node is top.
         Push this new node onto the stack
         Update top'''
-        pass
+        new = Node(newData)
+        new.setNext(self.__top)
+        self.__top = new
 
     def pop(self):
         ''' Return the Node that currently represents the top of the stack.
@@ -108,11 +135,15 @@ class Stack(object):
         #         to hold important information
         # Hint: Return null on a empty stack
         # Hint: Return the element(data) that is popped
-        pass
+        if self.isEmpty():
+            return None
+        temp = self.__top
+        self.__top = self.__top.getNext()
+        return temp.getData()
 
     def isEmpty(self):
         '''Check if the Stack is empty.'''
-        pass
+        return self.__top is None
 
 
 def isPalindrome(s):
@@ -128,7 +159,19 @@ def isPalindrome(s):
     # myQueue.printQueue()
 
     # Return appropriate value
-    return
+
+    # Convert the input to lowercase and remove non-alphanumeric characters
+
+    # Push to stack and enqueue to queue
+    for char in s:
+        myStack.push(char)
+        myQueue.enqueue(char)
+
+    # Compare stack and queue outputs
+    while not myStack.isEmpty():
+        if myStack.pop() != myQueue.dequeue():
+            return False
+    return True
 
 def isPalindromeEC(s):
     '''Implement if you wish to do the extra credit.'''
