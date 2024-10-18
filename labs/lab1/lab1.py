@@ -25,16 +25,12 @@ class Node(object):
     def __init__(self, data = None, next_node = None):
         """
         Constructs (or initializes) the attributes for an object of the class
-
-        ...
-
         Parameters
         ----------
         data : int or float
             An individual character or number to be stored in a node
         next_node : object of class Node
             A pointer to the next node in a stack or queue
-
         """
         self.__data = data
         self.__next_node = next_node
@@ -56,10 +52,21 @@ class Node(object):
         return self.__next_node
 
 class Queue(object):
-    """Provide class dosctring"""
+    """
+    Class Queue uses parent class node and implements the data structure of a queue
+
+    — A brief summary of its purpose and behavior
+    — Any public methods, along with a brief description"""
     def __init__(self):
+        """Constructs (or initializes) the attributes for an object of the class
+        Parameters
+        ----------
+        self - inherits needed parameters from parent
+        initialized to be empty
+        """
         self.__head = None
         self.__tail = None
+        
 
     def __str__(self):
         '''Loop through your queue and print each Node's data.'''
@@ -105,7 +112,12 @@ class Queue(object):
 
 
 class Stack(object):
-    """Provide class dosctring"""
+    """Constructs (or initializes) the attributes for a Stack
+
+        Parameters
+        ----------
+        Node Object
+        """
     def __init__(self):
         ''' We want to initialize our Stack to be empty.
         (ie) Set top as null'''
