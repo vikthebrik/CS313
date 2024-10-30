@@ -38,23 +38,49 @@ class max_heap(object):
         # Tips : insert 'data' at the end of the list initially
         #      : swap with its parent until the parent is larger or you 
         #      : reach the root
-        
-        pass
+        # Parameters:
+        # data: The value to be inserted into the heap.
+        #
+        # Raises:
+        # IndexError: If the heap is full.
+        if self.length >= self.max_size:
+            raise IndexError("Heap is full")
+        self.heap[self.length] = data
+        self.length += 1
+        curr_index = self.length - 1
+        # Swap upwards till rules are met
+        while curr_index > 0:
+            parent_index = self.__get_parent(curr_index)
+            if self.heap[curr_index] > self.heap[parent_index]:
+                self.__swap(curr_index, parent_index)
+                curr_index = parent_index
+            else:
+                break
         
     def peek(self):
         """Return the maximum value in the heap."""
-        pass
+        if self.length == 0:
+            return None
+        return self.heap[0]
 
     def extract_max(self):
         """Remove and return the maximum value in the heap.
-
+        
+        Returns:
+        The maximum value in the heap, or None if the heap is empty.
+        
         Raises KeyError if the heap is empty."""
         # Tips: Maximum element is first element of the list
         #     : swap first element with the last element of the list.
         #     : Remove that last element from the list and return it.
         #     : call __heapify to fix the heap
-        
-        pass
+        if self.length == 0:
+            raise KeyError("Heap is empty")
+        max_value = self.heap[0]
+        self.heap[0] = self.heap[self.length - 1]
+        self.length -= 1
+        self.__heapify(0)
+        return max_value
 
     def sort_in_place(self):
         """Perform heatsort in-place (e.g., reorder elements in ascending order for self.heap)
@@ -62,20 +88,46 @@ class max_heap(object):
         Tip 1. Use the list_length parameter for __heapify method to limit the scope of self.heap
         Tip 2. Only use build_heap once, and then call __heapify for index where max-heap property is violated
         """
-        pass
+        self.build_heap()
+        for i in range(self.length - 1, 0, -1):
+            self.__swap(0, i)
+            self.__heapify(0, i)
 
 
     def __heapify(self, curr_index, list_length = None):
+        """Ensure the max-heap property for the heap, starting at the specified index.
+        Parameters:
+        curr_index (int): The index at which to start heapifying.
+        list_length (int, optional): Length of the portion of the list to consider.
+                                     Defaults to the current length of the heap.
+        """
         # helper function for moving elements down in the heap
         # Page 157 of CLRS book
-        pass
+        if list_length is None:
+            list_length = self.length
+        largest = curr_index
+        left = self.__get_left(curr_index)
+        right = self.__get_right(curr_index)
+
+        if left < list_length and self.heap[left] > self.heap[largest]:
+            largest = left
+        if right < list_length and self.heap[right] > self.heap[largest]:
+            largest = right
+        if largest != curr_index:
+            self.__swap(curr_index, largest)
+            self.__heapify(largest, list_length)
+
 
     def build_heap(self):
+        """Build a max-heap from the current list.
+        
+        This method is typically used to initialize a valid heap from an unsorted list.
+        """
         # builds max heap from the list l.
         # Tip: call __heapify() to build to the list
         #    : Page 157 of CLRS book
-        pass
-
+        for i in range(self.length // 2 - 1, -1, -1):
+            self.__heapify(i)
 
     ''' Optional helper methods may be used if required '''
     ''' You may create your own helper methods as required.'''
@@ -109,4 +161,6 @@ def heap_sort(l):
     1. Create a max_heap object using the provided list l
     2. Call sort_in_place method to sort the list "in-place"
     """
-    pass
+    heap = max_heap(data=l)
+    heap.sort_in_place()
+    return heap.get_heap()
