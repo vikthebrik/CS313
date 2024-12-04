@@ -1,5 +1,25 @@
 class Node(object):
-    def __init__(self, data, left = None, right = None, parent = None, color = 'red'):
+    """
+    Represents a single node in a Red-Black Tree.
+
+    Attributes:
+        data (any): The value stored in the node.
+        left (Node): The left child of the node.
+        right (Node): The right child of the node.
+        parent (Node): The parent of the node.
+        color (str): The color of the node, either 'red' or 'black'.
+    """
+    def __init__(self, data, left=None, right=None, parent=None, color='red'):
+        """
+        Initializes a new Node object.
+
+        Args:
+            data (any): The value to be stored in the node.
+            left (Node, optional): Reference to the left child. Defaults to None.
+            right (Node, optional): Reference to the right child. Defaults to None.
+            parent (Node, optional): Reference to the parent node. Defaults to None.
+            color (str, optional): The color of the node. Defaults to 'red'.
+        """
         self.data = data
         self.left = left
         self.right = right
@@ -7,63 +27,116 @@ class Node(object):
         self.color = color
 
 class rb_tree(object):
+    """
+    Represents a Red-Black Tree, a self-balancing binary search tree.
 
+    Attributes:
+        PREORDER (int): Constant for preorder traversal.
+        INORDER (int): Constant for inorder traversal.
+        POSTORDER (int): Constant for postorder traversal.
+        root (Node): The root node of the tree.
+        sentinel (Node): The sentinel node used as a placeholder for null references.
+    """
     PREORDER = 1
     INORDER = 2
     POSTORDER = 3
-    # initialize root and size
+
     def __init__(self):
+        """
+        Initializes a new Red-Black Tree with a sentinel node.
+        """
         self.root = None
-        self.sentinel = Node(None, color = 'black')
+        self.sentinel = Node(None, color='black')
         self.sentinel.parent = self.sentinel
         self.sentinel.left = self.sentinel
         self.sentinel.right = self.sentinel
-    
+
     def print_tree(self):
-        # Print the data of all nodes in order
+        """
+        Prints the values of the nodes in the tree in preorder traversal.
+        """
         self.__print_tree(self.root)
-    
+
     def __print_tree(self, curr_node):
-        # Recursively print a subtree (in order), rooted at curr_node
-        # Printed in preorder
+        """
+        Recursively prints the values of the subtree rooted at the given node.
+
+        Args:
+            curr_node (Node): The root of the current subtree.
+        """
         if curr_node is not self.sentinel:
-            print(str(curr_node.data), end=' ')  # save space
+            print(str(curr_node.data), end=' ')
             self.__print_tree(curr_node.left)
             self.__print_tree(curr_node.right)
 
     def __print_with_colors(self, curr_node):
-        # Recursively print a subtree (in order), rooted at curr_node
-        # Printed in PREORDER
-        # Extracts the color of the node and print it in the format -dataC- where C is B for black and R for red
+        """
+        Recursively prints the values of the subtree rooted at the given node,
+        along with their colors.
+
+        Args:
+            curr_node (Node): The root of the current subtree.
+        """
         if curr_node is not self.sentinel:
-
-            if curr_node.color == "red":
-                node_color = "R"
-            else:
-                node_color = "B"
-
-            print(str(curr_node.data)+node_color, end=' ')  # save space
+            node_color = "R" if curr_node.color == "red" else "B"
+            print(str(curr_node.data) + node_color, end=' ')
             self.__print_with_colors(curr_node.left)
             self.__print_with_colors(curr_node.right)
 
     def print_with_colors(self):
-        # Also prints the data of all node but with color indicators
+        """
+        Prints the values of all nodes in the tree in preorder traversal, including
+        their colors.
+        """
         self.__print_with_colors(self.root)
-            
-            
+
     def __iter__(self):
+        """
+        Returns an iterator for inorder traversal of the tree.
+
+        Returns:
+            generator: An iterator for the tree's nodes.
+        """
         return self.inorder()
 
     def inorder(self):
+        """
+        Performs an inorder traversal of the tree.
+
+        Returns:
+            generator: An iterator for the nodes in inorder.
+        """
         return self.__traverse(self.root, rb_tree.INORDER)
 
     def preorder(self):
+        """
+        Performs a preorder traversal of the tree.
+
+        Returns:
+            generator: An iterator for the nodes in preorder.
+        """
         return self.__traverse(self.root, rb_tree.PREORDER)
 
     def postorder(self):
+        """
+        Performs a postorder traversal of the tree.
+
+        Returns:
+            generator: An iterator for the nodes in postorder.
+        """
         return self.__traverse(self.root, rb_tree.POSTORDER)
 
     def __traverse(self, curr_node, traversal_type):
+        """
+        Recursively traverses the tree in the specified order.
+
+        Args:
+            curr_node (Node): The current node being traversed.
+            traversal_type (int): The type of traversal (PREORDER, INORDER, POSTORDER).
+
+        Yields:
+            Node: The next node in the traversal.
+        """
         if curr_node is not self.sentinel:
             if traversal_type == self.PREORDER:
                 yield curr_node
@@ -74,17 +147,34 @@ class rb_tree(object):
             if traversal_type == self.POSTORDER:
                 yield curr_node
 
-    # find_min travels across the leftChild of every node, and returns the
-    # node who has no leftChild. This is the min value of a subtree
     def find_min(self, start_node=None):
+        """
+        Finds the minimum value node in the subtree rooted at the given node.
+
+        Args:
+            start_node (Node, optional): The root of the subtree. Defaults to None.
+
+        Returns:
+            Node: The node with the minimum value.
+        """
         current_node = start_node if start_node else self.root
         while current_node.left is not self.sentinel:
             current_node = current_node.left
         return current_node
 
-    
-    # find_node expects a data and returns the Node object for the given data
     def find_node(self, data):
+        """
+        Finds the node containing the specified data.
+
+        Args:
+            data (any): The value to search for in the tree.
+
+        Returns:
+            Node: The node containing the specified data.
+
+        Raises:
+            KeyError: If the data is not found in the tree or if the tree is empty.
+        """
         if self.root:
             res = self.__get(data, self.root)
             if res:
@@ -94,37 +184,50 @@ class rb_tree(object):
         else:
             raise KeyError('Error, tree has no root')
 
-    # helper function __get receives a data and a node. Returns the node with
-    # the given data
     def __get(self, data, current_node):
-        if current_node is self.sentinel: # if current_node does not exist return None
-            print("couldnt find data: {}".format(data))
+        """
+        Helper function to recursively find the node containing the specified data.
+
+        Args:
+            data (any): The value to search for.
+            current_node (Node): The node currently being checked.
+
+        Returns:
+            Node: The node containing the data, or None if not found.
+        """
+        if current_node is self.sentinel:
+            print(f"Couldn't find data: {data}")
             return None
         elif current_node.data == data:
             return current_node
         elif data < current_node.data:
-            # recursively call __get with data and current_node's left
-            return self.__get( data, current_node.left )
-        else: # data is greater than current_node.data
-            # recursively call __get with data and current_node's right
-            return self.__get( data, current_node.right )
-    
+            return self.__get(data, current_node.left)
+        else:
+            return self.__get(data, current_node.right)
 
     def find_successor(self, data):
-        # Private Method, can only be used inside of BST.
+        """
+        Finds the successor of the node containing the specified data.
+
+        Args:
+            data (any): The value whose successor is to be found.
+
+        Returns:
+            Node: The successor node, or None if no successor exists.
+
+        Raises:
+            KeyError: If the node with the given data is not found.
+        """
         current_node = self.find_node(data)
 
         if current_node is self.sentinel:
-            raise KeyError
+            raise KeyError("Node not found in the tree.")
 
-        # Travel left down the rightmost subtree
         if current_node.right:
             current_node = current_node.right
             while current_node.left is not self.sentinel:
                 current_node = current_node.left
             successor = current_node
-
-        # Travel up until the node is a left child
         else:
             parent = current_node.parent
             while parent is not self.sentinel and current_node is not parent.left:
@@ -132,137 +235,169 @@ class rb_tree(object):
                 parent = parent.parent
             successor = parent
 
-        if successor:
-            return successor
-        else:
-            return None
+        return successor if successor else None
 
-    # put adds a node to the tree
     def insert(self, data):
-        # if the tree has a root
+        """
+        Inserts a new node with the specified data into the tree.
+
+        Args:
+            data (any): The value to be added to the tree.
+        """
         if self.root:
-            # use helper method __put to add the new node to the tree
             new_node = self.__put(data, self.root)
             self.__rb_insert_fixup(new_node)
-        else: # there is no root
-            # make root a Node with values passed to put
-            self.root = Node(data, parent = self.sentinel, left = self.sentinel, right = self.sentinel)
+        else:
+            self.root = Node(data, parent=self.sentinel, left=self.sentinel, right=self.sentinel)
             new_node = self.root
             self.__rb_insert_fixup(new_node)
-    
-    #Insertion for Binary Search Tree
+
     def bst_insert(self, data):
-        # if the tree has a root
+        """
+        Inserts a new node into the tree following the Binary Search Tree (BST) rules
+        without maintaining the Red-Black Tree properties.
+
+        Args:
+            data (any): The value to be added to the tree.
+        """
         if self.root:
-            # use helper method __put to add the new node to the tree
             self.__put(data, self.root)
-        else: # there is no root
-            # make root a Node with values passed to put
-            self.root = Node(data, parent = self.sentinel, left = self.sentinel, right = self.sentinel)
-        
-    # helper function __put finds the appropriate place to add a node in the tree
+        else:
+            self.root = Node(data, parent=self.sentinel, left=self.sentinel, right=self.sentinel)
+
     def __put(self, data, current_node):
+        """
+        Helper function to recursively find the correct position for a new node.
+
+        Args:
+            data (any): The value to be added.
+            current_node (Node): The node currently being checked.
+
+        Returns:
+            Node: The newly added node.
+        """
         if data < current_node.data:
             if current_node.left != self.sentinel:
                 new_node = self.__put(data, current_node.left)
-            else: # current_node has no child
-                new_node = Node(data,
-                parent = current_node,
-                left = self.sentinel,
-                right = self.sentinel )
+            else:
+                new_node = Node(data, parent=current_node, left=self.sentinel, right=self.sentinel)
                 current_node.left = new_node
-        else: # data is greater than or equal to current_node's data
+        else:
             if current_node.right != self.sentinel:
                 new_node = self.__put(data, current_node.right)
-            else: # current_node has no right child
-                new_node = Node(data,
-                parent = current_node,
-                left = self.sentinel,
-                right = self.sentinel )
+            else:
+                new_node = Node(data, parent=current_node, left=self.sentinel, right=self.sentinel)
                 current_node.right = new_node
         return new_node
 
     def left_rotate(self, x):
+        """
+        Performs a left rotation at the given node.
+
+        Args:
+            x (Node): The node at which to perform the rotation.
+
+        Raises:
+            KeyError: If the right child of the node is not valid.
+        """
         y = x.right
         if y == self.sentinel:
             raise KeyError("Cannot left rotate without a valid right child.")
         
-        # Turn y's left subtree into x's right subtree
         x.right = y.left
         if y.left != self.sentinel:
             y.left.parent = x
         
-        # Link y's parent to x's parent
         y.parent = x.parent
-        if x.parent == self.sentinel:  # x was root
+        if x.parent == self.sentinel:
             self.root = y
         elif x == x.parent.left:
             x.parent.left = y
         else:
             x.parent.right = y
         
-        # Put x as y's left child
         y.left = x
         x.parent = y
 
     def right_rotate(self, y):
+        """
+        Performs a right rotation at the given node.
+
+        Args:
+            y (Node): The node at which to perform the rotation.
+
+        Raises:
+            KeyError: If the left child of the node is not valid.
+        """
         x = y.left
         if x == self.sentinel:
             raise KeyError("Cannot right rotate without a valid left child.")
         
-        # Turn x's right subtree into y's left subtree
         y.left = x.right
         if x.right != self.sentinel:
             x.right.parent = y
         
-        # Link x's parent to y's parent
         x.parent = y.parent
-        if y.parent == self.sentinel:  # y was root
+        if y.parent == self.sentinel:
             self.root = x
         elif y == y.parent.right:
             y.parent.right = x
         else:
             y.parent.left = x
         
-        # Put y as x's right child
         x.right = y
         y.parent = x
 
     def __rb_insert_fixup(self, z):
-        while z.parent.color == "red":  # Parent is red
-            if z.parent == z.parent.parent.left:  # Parent is left child
-                y = z.parent.parent.right  # Uncle
+        """
+        Restores the Red-Black Tree properties after an insertion.
+
+        Args:
+            z (Node): The newly inserted node.
+        """
+        while z.parent.color == "red":
+            if z.parent == z.parent.parent.left:  # Parent is a left child
+                y = z.parent.parent.right  # Uncle node
                 if y.color == "red":  # Case 1: Uncle is red
                     z.parent.color = "black"
                     y.color = "black"
                     z.parent.parent.color = "red"
-                    z = z.parent.parent  # Move up the tree
+                    z = z.parent.parent
                 else:
-                    if z == z.parent.right:  # Case 2: z is right child
+                    if z == z.parent.right:  # Case 2: z is a right child
                         z = z.parent
                         self.left_rotate(z)
-                    # Case 3: z is left child
+                    # Case 3: z is a left child
                     z.parent.color = "black"
                     z.parent.parent.color = "red"
                     self.right_rotate(z.parent.parent)
-            else:  # Symmetric cases for right child
-                y = z.parent.parent.left  # Uncle
+            else:  # Symmetric case for right child
+                y = z.parent.parent.left  # Uncle node
                 if y.color == "red":  # Case 1: Uncle is red
                     z.parent.color = "black"
                     y.color = "black"
                     z.parent.parent.color = "red"
-                    z = z.parent.parent  # Move up the tree
+                    z = z.parent.parent
                 else:
-                    if z == z.parent.left:  # Case 2: z is left child
+                    if z == z.parent.left:  # Case 2: z is a left child
                         z = z.parent
                         self.right_rotate(z)
-                    # Case 3: z is right child
+                    # Case 3: z is a right child
                     z.parent.color = "black"
                     z.parent.parent.color = "red"
                     self.left_rotate(z.parent.parent)
         self.root.color = "black"
 
     def delete(self, data):
+        """
+        Deletes the node containing the specified data from the tree.
+
+        Args:
+            data (any): The value to be deleted.
+
+        Raises:
+            KeyError: If the node with the specified data is not found.
+        """
         z = self.find_node(data)
         if z == self.sentinel:
             raise KeyError(f"Node with data {data} not found.")
@@ -294,6 +429,12 @@ class rb_tree(object):
             self.__rb_delete_fixup(x)
 
     def __rb_delete_fixup(self, x):
+        """
+        Restores the Red-Black Tree properties after a deletion.
+
+        Args:
+            x (Node): The node that replaces the deleted node.
+        """
         while x != self.root and x.color == "black":
             if x == x.parent.left:
                 w = x.parent.right  # Sibling
@@ -342,6 +483,13 @@ class rb_tree(object):
         x.color = "black"
 
     def __transplant(self, u, v):
+        """
+        Replaces one subtree as a child of its parent with another subtree.
+
+        Args:
+            u (Node): The node to be replaced.
+            v (Node): The node to replace u.
+        """
         if u.parent == self.sentinel:
             self.root = v
         elif u == u.parent.left:
