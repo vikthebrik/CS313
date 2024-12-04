@@ -6,7 +6,6 @@ class Node(object):
         self.parent = parent
         self.color = color
 
-
 class rb_tree(object):
 
     PREORDER = 1
@@ -38,7 +37,7 @@ class rb_tree(object):
         # Extracts the color of the node and print it in the format -dataC- where C is B for black and R for red
         if curr_node is not self.sentinel:
 
-            if curr_node.color is "red":
+            if curr_node.color == "red":
                 node_color = "R"
             else:
                 node_color = "B"
@@ -77,11 +76,12 @@ class rb_tree(object):
 
     # find_min travels across the leftChild of every node, and returns the
     # node who has no leftChild. This is the min value of a subtree
-    def find_min(self):
-        current_node = self.root
-        while current_node.left:
+    def find_min(self, start_node=None):
+        current_node = start_node if start_node else self.root
+        while current_node.left is not self.sentinel:
             current_node = current_node.left
         return current_node
+
     
     # find_node expects a data and returns the Node object for the given data
     def find_node(self, data):
@@ -182,51 +182,170 @@ class rb_tree(object):
                 current_node.right = new_node
         return new_node
 
-    
-    def delete(self, data):
-        # Same as binary tree delete, except we call rb_delete fixup at the end.
-        pass
+    def left_rotate(self, x):
+        y = x.right
+        if y == self.sentinel:
+            raise KeyError("Cannot left rotate without a valid right child.")
+        
+        # Turn y's left subtree into x's right subtree
+        x.right = y.left
+        if y.left != self.sentinel:
+            y.left.parent = x
+        
+        # Link y's parent to x's parent
+        y.parent = x.parent
+        if x.parent == self.sentinel:  # x was root
+            self.root = y
+        elif x == x.parent.left:
+            x.parent.left = y
+        else:
+            x.parent.right = y
+        
+        # Put x as y's left child
+        y.left = x
+        x.parent = y
 
-    def left_rotate(self, current_node):
-        # If there is nothing to rotate with, then raise a KeyError
-        # if x is the root of the tree to rotate with left child subtree T1 and right child y, 
-        # where T2 and T3 are the left and right children of y then:
-        # x becomes left child of y and T3 as its right child of y
-        # T1 becomes left child of x and T2 becomes right child of x
+    def right_rotate(self, y):
+        x = y.left
+        if x == self.sentinel:
+            raise KeyError("Cannot right rotate without a valid left child.")
+        
+        # Turn x's right subtree into y's left subtree
+        y.left = x.right
+        if x.right != self.sentinel:
+            x.right.parent = y
+        
+        # Link x's parent to y's parent
+        x.parent = y.parent
+        if y.parent == self.sentinel:  # y was root
+            self.root = x
+        elif y == y.parent.right:
+            y.parent.right = x
+        else:
+            y.parent.left = x
+        
+        # Put y as x's right child
+        x.right = y
+        y.parent = x
 
-        # refer page 328 of CLRS book for rotations
-
-        pass
-    
-    def right_rotate(self, current_node):
-        # If there is nothing to rotate with, then raise a KeyError
-        # If y is the root of the tree to rotate with right child subtree T3 and left child x, 
-        # where T1 and T2 are the left and right children of x then:
-        # y becomes right child of x and T1 as its left child of x
-        # T2 becomes left child of y and T3 becomes right child of y
-
-        # refer page 328 of CLRS book for rotations
-
-        pass
-
-    
     def __rb_insert_fixup(self, z):
-        # This function maintains the balancing and coloring property after bst insertion into
-        # the tree. Please red the code for insert() method to get a better understanding
-        # refer page 330 of CLRS book and lecture slides for rb_insert_fixup
+        while z.parent.color == "red":  # Parent is red
+            if z.parent == z.parent.parent.left:  # Parent is left child
+                y = z.parent.parent.right  # Uncle
+                if y.color == "red":  # Case 1: Uncle is red
+                    z.parent.color = "black"
+                    y.color = "black"
+                    z.parent.parent.color = "red"
+                    z = z.parent.parent  # Move up the tree
+                else:
+                    if z == z.parent.right:  # Case 2: z is right child
+                        z = z.parent
+                        self.left_rotate(z)
+                    # Case 3: z is left child
+                    z.parent.color = "black"
+                    z.parent.parent.color = "red"
+                    self.right_rotate(z.parent.parent)
+            else:  # Symmetric cases for right child
+                y = z.parent.parent.left  # Uncle
+                if y.color == "red":  # Case 1: Uncle is red
+                    z.parent.color = "black"
+                    y.color = "black"
+                    z.parent.parent.color = "red"
+                    z = z.parent.parent  # Move up the tree
+                else:
+                    if z == z.parent.left:  # Case 2: z is left child
+                        z = z.parent
+                        self.right_rotate(z)
+                    # Case 3: z is right child
+                    z.parent.color = "black"
+                    z.parent.parent.color = "red"
+                    self.left_rotate(z.parent.parent)
+        self.root.color = "black"
 
-        pass
+    def delete(self, data):
+        z = self.find_node(data)
+        if z == self.sentinel:
+            raise KeyError(f"Node with data {data} not found.")
+        
+        y = z
+        y_original_color = y.color
+        if z.left == self.sentinel:
+            x = z.right
+            self.__transplant(z, z.right)
+        elif z.right == self.sentinel:
+            x = z.left
+            self.__transplant(z, z.left)
+        else:
+            y = self.find_min(start_node=z.right)
+            y_original_color = y.color
+            x = y.right
+            if y.parent == z:
+                x.parent = y
+            else:
+                self.__transplant(y, y.right)
+                y.right = z.right
+                y.right.parent = y
+            self.__transplant(z, y)
+            y.left = z.left
+            y.left.parent = y
+            y.color = z.color
+        
+        if y_original_color == "black":
+            self.__rb_delete_fixup(x)
 
     def __rb_delete_fixup(self, x):
-        # This function maintains the balancing and coloring property after bst deletion 
-        # from the tree. Please read the code for delete() method to get a better understanding.
-        # refer page 338 of CLRS book and lecture slides for rb_delete_fixup
-        
-        pass
+        while x != self.root and x.color == "black":
+            if x == x.parent.left:
+                w = x.parent.right  # Sibling
+                if w.color == "red":  # Case 1: Sibling is red
+                    w.color = "black"
+                    x.parent.color = "red"
+                    self.left_rotate(x.parent)
+                    w = x.parent.right
+                if w.left.color == "black" and w.right.color == "black":  # Case 2: Both children black
+                    w.color = "red"
+                    x = x.parent
+                else:
+                    if w.right.color == "black":  # Case 3: Right child black
+                        w.left.color = "black"
+                        w.color = "red"
+                        self.right_rotate(w)
+                        w = x.parent.right
+                    # Case 4: Right child red
+                    w.color = x.parent.color
+                    x.parent.color = "black"
+                    w.right.color = "black"
+                    self.left_rotate(x.parent)
+                    x = self.root
+            else:  # Symmetric cases for right child
+                w = x.parent.left  # Sibling
+                if w.color == "red":  # Case 1: Sibling is red
+                    w.color = "black"
+                    x.parent.color = "red"
+                    self.right_rotate(x.parent)
+                    w = x.parent.left
+                if w.left.color == "black" and w.right.color == "black":  # Case 2: Both children black
+                    w.color = "red"
+                    x = x.parent
+                else:
+                    if w.left.color == "black":  # Case 3: Left child black
+                        w.right.color = "black"
+                        w.color = "red"
+                        self.left_rotate(w)
+                        w = x.parent.left
+                    # Case 4: Left child red
+                    w.color = x.parent.color
+                    x.parent.color = "black"
+                    w.left.color = "black"
+                    self.right_rotate(x.parent)
+                    x = self.root
+        x.color = "black"
 
-
-    
-
-
-    
-    
+    def __transplant(self, u, v):
+        if u.parent == self.sentinel:
+            self.root = v
+        elif u == u.parent.left:
+            u.parent.left = v
+        else:
+            u.parent.right = v
+        v.parent = u.parent
