@@ -1,4 +1,4 @@
-import lab3
+import lab4.lab3 as lab3
 import unittest
 
 class TestInsertMethod(unittest.TestCase):
